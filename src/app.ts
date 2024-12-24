@@ -1,11 +1,9 @@
-import express from 'express';
-import { connectDB } from './config/db';
-import dotenv from 'dotenv';
+import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
-
-dotenv.config();
+import { errorHandler } from './middlewares/errorHandler';
+import api from './routes';
 
 const app = express();
 
@@ -20,11 +18,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 app.use(cors(corsOptions));
+app.use('/api/v1', api);
 
-connectDB();
-
-app.get('/example', (req, res) => {
-    res.send('Hello, world!');
+app.get('/', (req: Request, res: Response) => {
+    res.status(200).send({ message: 'API is running!' });
 });
+
+app.use(errorHandler);
 
 export default app;
