@@ -1,0 +1,5 @@
+export const ERROR_CODES = {
+    // General Errors
+    INTERNAL_SERVER_ERROR: "ERR_INTERNAL_SERVER",
+    INVALID_REQUEST: "ERR_INVALID_REQUEST",
+};

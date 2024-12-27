@@ -1,2 +1,2 @@
 export * from './httpStatus';
-export * from './errorMessages';
+export * from './errorCodes';
