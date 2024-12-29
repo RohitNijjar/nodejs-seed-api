@@ -1,4 +1,5 @@
 import { UserPayload } from "../../shared/models";
+import { UserDTO } from "./dtos/userDto";
 import { User } from "./models/userModel";
 
 export const toUser = (email: string, password: string, firstName: string, lastName: string, isVerified: boolean): User => ({
@@ -13,4 +14,13 @@ export const toUserPayload = (userId: string, email: string, isVerified: boolean
     userId,
     email,
     isVerified
+});
+
+export const toUserDto = (user: User, token?: string): UserDTO => ({
+    id: user.id ?? '',
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    isVerified: user.isVerified,
+    token: token
 });

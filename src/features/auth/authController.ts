@@ -21,10 +21,10 @@ export const AuthController = {
     login: async (req: Request, res: Response, next: NextFunction): Promise<void> => { 
         const { email, password } = req.body;
         try {
-            const token = await AuthService.login(email, password);
+            const user = await AuthService.login(email, password);
 
             res.status(HTTP_STATUS.OK).json(createApiResponse({
-                data: { token },
+                data: user,
                 statusCode: HTTP_STATUS.OK,
             }));
         } catch (error) {

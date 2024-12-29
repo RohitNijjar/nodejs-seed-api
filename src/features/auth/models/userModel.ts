@@ -19,8 +19,7 @@ const UserSchema: Schema = new Schema<User>({
     password: {
         type: String,
         required: true,
-        trim: true,
-        select: false,
+        trim: true
     },
     firstName: {
         type: String,
@@ -40,7 +39,7 @@ const UserSchema: Schema = new Schema<User>({
     timestamps: true,
     toJSON: {
         transform: (doc, ret) => {
-            ret.id = ret._id;
+            ret.id = ret._id.toString();
             delete ret._id;
             delete ret.__v;
             return ret;
