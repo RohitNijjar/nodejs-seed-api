@@ -4,20 +4,21 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './middlewares/errorHandler';
 import api from './routes';
+import { env } from './config';
 
 const app = express();
 
 const corsOptions = {
-    origin: process.env.ALLOWED_ORIGIN,
+    origin: env.ALLOWED_ORIGIN,
     methods: ['GET', 'POST', 'PUT', 'DELETE',],
     allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+app.use(cors(corsOptions));
 app.use(helmet())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
-app.use(cors(corsOptions));
 app.use('/api/v1', api);
 
 app.get('/', (req: Request, res: Response) => {
