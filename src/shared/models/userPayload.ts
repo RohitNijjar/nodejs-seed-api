@@ -1,5 +1,5 @@
-export interface UserPayload { 
-    userId: string; 
-    email: string; 
-    isVerified: boolean;
-};
+export interface UserPayload {
+  userId: string;
+  email: string;
+  isVerified: boolean;
+}

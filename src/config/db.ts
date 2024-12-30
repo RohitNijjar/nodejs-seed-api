@@ -1,8 +1,9 @@
-import mongoose from "mongoose";
-import { logger } from "./logger";
-import { env } from "./env";
+import mongoose from 'mongoose';
 
-export const connectDB = async () => {
+import { env } from './env';
+import { logger } from './logger';
+
+export const connectDB = async (): Promise<void> => {
   try {
     await mongoose.connect(env.MONGO_URI!);
   } catch (error) {
@@ -13,4 +14,4 @@ export const connectDB = async () => {
     }
     process.exit(1);
   }
-}
+};

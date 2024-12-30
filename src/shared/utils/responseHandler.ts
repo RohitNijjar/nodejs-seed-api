@@ -1,10 +1,10 @@
-import { ApiResponse } from "../models";
+import { ApiResponse } from '../models';
 
 export const createApiResponse = <T>({
-    data,
-    statusCode,
-    errorCode,
-    message,
+  data,
+  statusCode,
+  errorCode,
+  message,
 }: ApiResponse<T>): ApiResponse<T> => {
-    return { data, message, errorCode, statusCode };
+  return { data, statusCode, errorCode, message };
 };
