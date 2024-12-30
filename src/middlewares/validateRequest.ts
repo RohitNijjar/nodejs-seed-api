@@ -1,16 +1,24 @@
-import { NextFunction, Request, Response } from "express";
-import { ObjectSchema } from "joi";
-import { AppError } from "../shared/errors";
-import { ERROR_CODES, HTTP_STATUS } from "../shared/constants";
+import { NextFunction, Request, Response } from 'express';
+import { ObjectSchema } from 'joi';
 
-export const validateRequest = (schema: ObjectSchema) => { 
-    return (req: Request, res: Response, next: NextFunction): void => { 
-        const { error } = schema.validate(req.body);
-        if (error) { 
-            const errorMessage = error.details.map((detail) => detail.message).join(', ');
-            throw new AppError(errorMessage, ERROR_CODES.INVALID_REQUEST, HTTP_STATUS.BAD_REQUEST);
-        }
+import { ERROR_CODES, HTTP_STATUS } from '../shared/constants';
+import { ApiError } from '../shared/errors';
 
-        next();
-    };
+export const validateRequest = (schema: ObjectSchema) => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    const { error } = schema.validate(req.body);
+    if (error) {
+      const errorMessage = error.details
+        .map((detail) => detail.message)
+        .join(', ');
+      throw new ApiError(
+        'Validation errors',
+        ERROR_CODES.INVALID_REQUEST,
+        HTTP_STATUS.BAD_REQUEST,
+        errorMessage,
+      );
+    }
+
+    next();
+  };
 };

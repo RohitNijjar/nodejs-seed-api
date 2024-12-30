@@ -1,15 +1,15 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import auth from './features/auth/authRoutes';
+import { authRoutes } from './features/auth/authRoutes';
 
 const router = Router();
 
 router.get('/', (req, res) => {
-    res.json({
-        message: 'API - 👋🌎🌍🌏',
-    });
+  res.json({
+    message: 'API - 👋🌎🌍🌏',
+  });
 });
 
-router.use('/auth', auth);
+router.use('/auth', authRoutes);
 
-export default router;
+export { router };

@@ -1,9 +1,9 @@
 export type ApiResponse<T> = {
-    data?: T;
-    statusCode: number;
+  data?: T;
+  statusCode: number;
 } & errorResponse;
 
 export type errorResponse = {
-    errorCode?: string;
-    message?: string;
-}
+  errorCode?: string;
+  message?: string;
+};
