@@ -2,14 +2,14 @@ import { Router } from 'express';
 
 import { authRoutes } from './features/auth/authRoutes';
 
-const router = Router();
+const apiRoutes = Router();
 
-router.get('/', (req, res) => {
+apiRoutes.get('/', (_req, res) => {
   res.json({
     message: 'API - 👋🌎🌍🌏',
   });
 });
 
-router.use('/auth', authRoutes);
+apiRoutes.use('/auth', authRoutes);
 
-export { router };
+export { apiRoutes };
