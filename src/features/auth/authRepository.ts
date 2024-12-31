@@ -14,14 +14,14 @@ export const AuthRepository = {
     } catch (error) {
       if (error instanceof MongoServerError && error.code === 11000) {
         throw new ApiError(
-          'Auth repository error',
+          'Auth repository error: User with this email already exists',
           AUTH_ERROR_CODES.USER_ALREADY_EXISTS,
           HTTP_STATUS.CONFLICT,
         );
       }
 
       throw new ApiError(
-        'Auth repository error',
+        'Auth repository error: Server error',
         ERROR_CODES.INTERNAL_SERVER_ERROR,
       );
     }
@@ -29,5 +29,9 @@ export const AuthRepository = {
 
   getUserByEmail: async (email: string): Promise<User | null> => {
     return await UserModel.findOne({ email });
+  },
+
+  updateUser: async (user: User): Promise<void> => {
+    await UserModel.updateOne({ _id: user.id }, user);
   },
 };

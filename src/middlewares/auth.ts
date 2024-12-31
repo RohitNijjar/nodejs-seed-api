@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 
 import { AUTH_ERROR_CODES } from '../features/auth/errorCodes';
 import { ERROR_CODES, HTTP_STATUS } from '../shared/constants';
+import { ApiError } from '../shared/errors';
 import { verifyToken } from '../shared/utils/jwt';
 
 const authMiddleware = async (
@@ -27,18 +27,10 @@ const authMiddleware = async (
 
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        errorCode: AUTH_ERROR_CODES.TOKEN_EXPIRED,
-        statusCode: HTTP_STATUS.UNAUTHORIZED,
-      });
-      return;
-    }
-
-    if (error instanceof jwt.JsonWebTokenError) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        errorCode: AUTH_ERROR_CODES.INVALID_TOKEN,
-        statusCode: HTTP_STATUS.UNAUTHORIZED,
+    if (error instanceof ApiError) {
+      res.status(error.statusCode).json({
+        errorCode: error.errorCode,
+        statusCode: error.statusCode,
       });
       return;
     }
