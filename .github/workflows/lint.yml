@@ -3,37 +3,31 @@ name: Lint Code
 on:
   pull_request:
     branches:
-      - dev  # Or the branch you want to check for PRs, e.g., 'dev'
+      - dev 
 
 jobs:
   lint:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.16.0'  # Use the Node version you're working with
+          node-version: '20.16.0'
 
-      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Run ESLint on the code
       - name: Run ESLint
-        run: npm run lint:fix  # Make sure this command is defined in your package.json
+        run: npm run lint:fix
 
-      # Optionally, you can fail the action if linting fails
-      - name: Fail if linting errors are found
+      - name: Check for linting errors
         run: |
-          if [[ $(npm run lint --silent) ]]; then
-            echo "Linting passed!";
-          else
-            echo "Linting failed!";
-            exit 1;
+          npm run lint --silent
+          if [ $? -ne 0 ]; then
+            echo "Linting failed!"
+            exit 1
           fi
