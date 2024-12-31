@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint **/*.{ts,js}",
-    "lint:fix": "eslint **/*.{ts,js} --fix"
+    "lint:fix": "eslint **/*.{ts,js} --fix",
+    "generate-secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
   },
   "keywords": [],
   "author": "",
