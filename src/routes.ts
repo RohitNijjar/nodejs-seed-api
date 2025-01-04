@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { authRoutes } from './features/auth/authRoutes';
+import { rateLimitByIpMiddleware } from './middlewares/rateLimiter';
 
 const apiRoutes = Router();
 
@@ -10,6 +11,6 @@ apiRoutes.get('/', (_req, res) => {
   });
 });
 
-apiRoutes.use('/auth', authRoutes);
+apiRoutes.use('/auth', rateLimitByIpMiddleware, authRoutes);
 
 export { apiRoutes };

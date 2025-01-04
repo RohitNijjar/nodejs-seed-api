@@ -1,0 +1,40 @@
+import jwt from 'jsonwebtoken';
+
+import { env } from '../../../config';
+import { HTTP_STATUS, ERROR_CODES } from '../../constants';
+import { ApiError } from '../../errors';
+import { UserPayload } from '../../models';
+
+export const generateToken = (
+  payload: UserPayload,
+  jwtSecret = env.JWT_SECRET ?? '',
+  expiration: string = env.JWT_EXPIRATION,
+): string => {
+  return jwt.sign(payload, jwtSecret, { expiresIn: expiration });
+};
+
+export const verifyToken = (
+  token: string,
+  jwtSecret = env.JWT_SECRET ?? '',
+): UserPayload => {
+  try {
+    return jwt.verify(token, jwtSecret) as UserPayload;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new ApiError(
+        'JWT error: Token expired',
+        ERROR_CODES.TOKEN_EXPIRED,
+        HTTP_STATUS.UNAUTHORIZED,
+      );
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new ApiError(
+        'JWT error: Invalid token',
+        ERROR_CODES.INVALID_TOKEN,
+        HTTP_STATUS.UNAUTHORIZED,
+      );
+    }
+    throw new ApiError('JWT error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+  }
+};
