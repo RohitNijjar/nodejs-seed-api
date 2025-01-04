@@ -36,7 +36,14 @@ export const loginValidation = Joi.object({
   }),
 });
 
-export const changePasswordValidation = Joi.object({
+export const forgotPasswordValidation = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.empty': 'Email is required',
+    'string.email': 'Invalid email format',
+  }),
+});
+
+export const resetPasswordValidation = Joi.object({
   email: Joi.string().email().required().messages({
     'string.empty': 'Email is required',
     'string.email': 'Invalid email format',
@@ -63,4 +70,11 @@ export const changePasswordValidation = Joi.object({
       'string.empty': 'Confirm password is required',
       'any.only': 'Passwords do not match',
     }),
+});
+
+export const sendVerificationEmailValidation = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.empty': 'Email is required',
+    'string.email': 'Invalid email format',
+  }),
 });

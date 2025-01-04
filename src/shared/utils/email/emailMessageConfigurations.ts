@@ -1,4 +1,4 @@
-import { EmailMessage } from '../models';
+import { EmailMessage } from '../../models';
 
 export const createEmailMessageConfigurations = (
   emailMessage: EmailMessage,

@@ -1,11 +1,13 @@
 import { Router } from 'express';
 
-import { AuthController } from './authController';
+import { AuthController } from './controllers/authController';
 import {
-  changePasswordValidation,
+  forgotPasswordValidation,
   loginValidation,
   registerValidation,
-} from './authValidations';
+  resetPasswordValidation,
+  sendVerificationEmailValidation,
+} from './validators/authValidations';
 import { validateRequest } from '../../middlewares/validateRequest';
 
 const authRoutes = Router();
@@ -20,11 +22,22 @@ authRoutes.post(
   validateRequest(loginValidation),
   AuthController.login,
 );
-authRoutes.get('/verify-email/:token', AuthController.verifyEmail);
+authRoutes.post('/verify-email', AuthController.verifyEmail);
 authRoutes.post(
-  '/change-password',
-  validateRequest(changePasswordValidation),
-  AuthController.changePassword,
+  '/forgot-password',
+  validateRequest(forgotPasswordValidation),
+  AuthController.forgotPassword,
+);
+authRoutes.post(
+  '/reset-password',
+  validateRequest(resetPasswordValidation),
+  AuthController.resetPassword,
+);
+
+authRoutes.post(
+  '/send-verification-email',
+  validateRequest(sendVerificationEmailValidation),
+  AuthController.sendVerificationEmail,
 );
 
 export { authRoutes };

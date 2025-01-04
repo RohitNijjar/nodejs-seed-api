@@ -1,11 +1,11 @@
-import { UserDTO } from './dtos';
+import { UserPayload } from '../../../shared/models';
+import { UserDTO } from '../dtos';
 import {
-  ChangePasswordRequest,
   LoginRequest,
   RegisterRequest,
-} from './models/requests';
-import { User } from './models/userModel';
-import { UserPayload } from '../../shared/models';
+  ResetPasswordRequest,
+} from '../models/requests';
+import { User } from '../models/userModel';
 
 export const toRegisterRequest = (
   email: string,
@@ -27,13 +27,13 @@ export const toLoginRequest = (
   password,
 });
 
-export const toChangePasswordRequest = (
-  email: string,
+export const toResetPasswordRequest = (
+  token: string,
   oldPassword: string,
   newPassword: string,
   confirmPassword: string,
-): ChangePasswordRequest => ({
-  email,
+): ResetPasswordRequest => ({
+  token,
   oldPassword,
   newPassword,
   confirmPassword,

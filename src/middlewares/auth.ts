@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
 
-import { AUTH_ERROR_CODES } from '../features/auth/errorCodes';
 import { ERROR_CODES, HTTP_STATUS } from '../shared/constants';
 import { ApiError } from '../shared/errors';
-import { verifyToken } from '../shared/utils/jwt';
+import { verifyToken } from '../shared/utils/JWT/jwt';
 
 const authMiddleware = async (
   req: Request,
@@ -16,14 +15,14 @@ const authMiddleware = async (
 
     if (!token) {
       res.status(HTTP_STATUS.BAD_REQUEST).json({
-        errorCode: AUTH_ERROR_CODES.NO_TOKEN,
+        errorCode: ERROR_CODES.NO_TOKEN,
         statusCode: HTTP_STATUS.BAD_REQUEST,
       });
       return;
     }
 
     const decoded = verifyToken(token);
-    (req as any).userId = decoded.userId;
+    (req as any).user = decoded;
 
     next();
   } catch (error) {

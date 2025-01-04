@@ -1,15 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
+import { ApiError } from '../../../shared/errors';
+import { createApiResponse } from '../../../shared/utils/responseHandler';
 import {
-  toChangePasswordRequest,
+  toResetPasswordRequest,
   toLoginRequest,
   toRegisterRequest,
-} from './authMappers';
-import { AuthService } from './authService';
-import { AUTH_ERROR_CODES } from './errorCodes';
-import { HTTP_STATUS } from '../../shared/constants';
-import { ApiError } from '../../shared/errors';
-import { createApiResponse } from '../../shared/utils/responseHandler';
+} from '../mappers/authMappers';
+import { AuthService } from '../services/authService';
 
 export const AuthController = {
   register: async (
@@ -59,12 +58,12 @@ export const AuthController = {
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const { token } = req.params;
+    const { token } = req.body;
     try {
       if (!token) {
         throw new ApiError(
           'Auth controller error: No token provided',
-          AUTH_ERROR_CODES.NO_TOKEN,
+          ERROR_CODES.NO_TOKEN,
           HTTP_STATUS.BAD_REQUEST,
         );
       }
@@ -82,17 +81,40 @@ export const AuthController = {
     }
   },
 
-  changePassword: async (
+  forgotPassword: async (
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const { email, oldPassword, newPassword, confirmPassword } = req.body;
+    const { email } = req.body;
 
     try {
-      await AuthService.changePassword(
-        toChangePasswordRequest(
-          email,
+      const message = await AuthService.forgotPassword(email);
+
+      res.status(HTTP_STATUS.OK).json(
+        createApiResponse({
+          data: {
+            message,
+          },
+          statusCode: HTTP_STATUS.OK,
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  resetPassword: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const { token, oldPassword, newPassword, confirmPassword } = req.body;
+
+    try {
+      await AuthService.resetPassword(
+        toResetPasswordRequest(
+          token,
           oldPassword,
           newPassword,
           confirmPassword,
@@ -104,6 +126,29 @@ export const AuthController = {
           data: {
             updated: true,
             message: 'Password updated successfully',
+          },
+          statusCode: HTTP_STATUS.OK,
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  sendVerificationEmail: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const { email } = req.body;
+
+    try {
+      await AuthService.sendVerificationEmail(email);
+
+      res.status(HTTP_STATUS.OK).json(
+        createApiResponse({
+          data: {
+            message: 'Verification email sent successfully',
           },
           statusCode: HTTP_STATUS.OK,
         }),

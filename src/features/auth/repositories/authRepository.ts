@@ -1,10 +1,10 @@
 import { MongoServerError } from 'mongodb';
 
-import { AUTH_ERROR_CODES } from './errorCodes';
-import { RegisterRequest } from './models/requests';
-import { User, UserModel } from './models/userModel';
-import { ERROR_CODES, HTTP_STATUS } from '../../shared/constants';
-import { ApiError } from '../../shared/errors';
+import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
+import { ApiError } from '../../../shared/errors';
+import { AUTH_ERROR_CODES } from '../errors/errorCodes';
+import { RegisterRequest } from '../models/requests';
+import { User, UserModel } from '../models/userModel';
 
 export const AuthRepository = {
   register: async (registerRequest: RegisterRequest): Promise<User> => {
