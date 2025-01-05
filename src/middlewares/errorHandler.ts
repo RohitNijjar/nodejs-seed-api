@@ -27,7 +27,10 @@ export const errorHandler = (
     );
   } else {
     logger.error(`Unexpected error: ${err.message}`);
-    const statusCode = res.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    const statusCode =
+      res.statusCode !== 200
+        ? res.statusCode
+        : HTTP_STATUS.INTERNAL_SERVER_ERROR;
 
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
       createApiResponse({

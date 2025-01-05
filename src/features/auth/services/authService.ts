@@ -1,6 +1,11 @@
 import { env } from '../../../config';
-import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
+import {
+  BLACKLIST_PREFIX,
+  ERROR_CODES,
+  HTTP_STATUS,
+} from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
+import { setRedisKeyAsync } from '../../../shared/redis/redisClient';
 import { sendEmail } from '../../../shared/utils/email';
 import {
   comparePassword,
@@ -31,7 +36,9 @@ export const AuthService = {
     return toUserDto(newUser);
   },
 
-  login: async (loginRequest: LoginRequest): Promise<UserDTO> => {
+  login: async (
+    loginRequest: LoginRequest,
+  ): Promise<{ user: UserDTO; refreshToken: string }> => {
     const user = await AuthRepository.getUserByEmail(loginRequest.email);
     if (!user) {
       throw new ApiError(
@@ -60,8 +67,13 @@ export const AuthService = {
       );
     }
     const token = generateToken(toUserPayload(user.id, user.email, 'access'));
+    const refreshToken = generateToken(
+      toUserPayload(user.id, user.email, 'renewal'),
+      env.REFRESH_TOKEN_SECRET,
+      env.REFRESH_TOKEN_EXPIRATION,
+    );
 
-    return toUserDto(user, token);
+    return { user: toUserDto(user, token), refreshToken };
   },
 
   verifyEmail: async (token: string): Promise<string> => {
@@ -199,5 +211,11 @@ export const AuthService = {
       subject: 'Verify Your Email',
       html: emailHtml,
     });
+  },
+
+  logout: async (refreshToken: string): Promise<void> => {
+    const tokenKey = `${BLACKLIST_PREFIX}${refreshToken}`;
+    const expiration = Number(env.REFRESH_TOKEN_EXPIRATION_BLACKLIST);
+    await setRedisKeyAsync(tokenKey, expiration, 'blacklisted');
   },
 };

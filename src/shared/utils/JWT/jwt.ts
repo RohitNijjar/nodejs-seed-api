@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 
 import { env } from '../../../config';
-import { HTTP_STATUS, ERROR_CODES } from '../../constants';
+import { HTTP_STATUS, ERROR_CODES, BLACKLIST_PREFIX } from '../../constants';
 import { ApiError } from '../../errors';
 import { UserPayload } from '../../models';
+import { getRedisValueAsync } from '../../redis/redisClient';
 
 export const generateToken = (
   payload: UserPayload,
@@ -37,4 +38,12 @@ export const verifyToken = (
     }
     throw new ApiError('JWT error', ERROR_CODES.INTERNAL_SERVER_ERROR);
   }
+};
+
+export const isTokenBlacklisted = async (
+  refreshToken: string,
+): Promise<boolean> => {
+  const tokenKey = `${BLACKLIST_PREFIX}${refreshToken}`;
+  const isBlacklisted = await getRedisValueAsync(tokenKey);
+  return Boolean(isBlacklisted);
 };

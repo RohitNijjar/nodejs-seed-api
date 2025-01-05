@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
 
+import { logger } from '../config';
 import { ERROR_CODES, HTTP_STATUS } from '../shared/constants';
 import { ApiError } from '../shared/errors';
-import { verifyToken } from '../shared/utils/JWT/jwt';
+import { isTokenBlacklisted, verifyToken } from '../shared/utils/JWT/jwt';
 
 const authMiddleware = async (
   req: Request,
@@ -12,6 +13,24 @@ const authMiddleware = async (
 ): Promise<void> => {
   try {
     const token = req.headers['authorization']?.split('Bearer ')[1];
+    const refreshToken = req.cookies['refreshToken'];
+
+    if (!refreshToken) {
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
+        errorCode: ERROR_CODES.NO_REFRESH_TOKEN,
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+      });
+      return;
+    }
+
+    const isBlacklisted = await isTokenBlacklisted(refreshToken);
+    if (isBlacklisted) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        errorCode: ERROR_CODES.REFRESH_TOKEN_EXPIRED,
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+      });
+      return;
+    }
 
     if (!token) {
       res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -34,6 +53,7 @@ const authMiddleware = async (
       return;
     }
 
+    logger.error(`Auth Unexpected error: ${error}`);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,

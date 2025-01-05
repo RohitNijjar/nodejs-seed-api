@@ -3,28 +3,39 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-export const env = {
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: process.env.PORT || 5000,
-  MONGO_URI: process.env.MONGO_URI,
-  JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRATION: process.env.JWT_EXPIRATION || '1d',
-  ALLOWED_ORIGIN: process.env.ALLOWED_ORIGIN || '*',
-  EMAIL_SERVICE: process.env.EMAIL_SERVICE,
-  EMAIL_JWT_EXPIRATION: process.env.EMAIL_TOKEN_EXPIRATION || '15m',
-  EMAIL_JWT_SECRET: process.env.EMAIL_JWT_SECRET,
-  RESET_PASSWORD_JWT_SECRET: process.env.RESET_PASSWORD_JWT_SECRET,
-  RESET_PASSWORD_JWT_EXPIRATION:
-    process.env.RESET_PASSWORD_JWT_EXPIRATION || '10m',
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL,
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
-  CLIENT_URL: process.env.CLIENT_URL,
-  REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
-  REDIS_PORT: process.env.REDIS_PORT || '6379',
-  REDIS_PASSWORD: process.env.REDIS_PASSWORD,
-  REDIS_TLS: process.env.REDIS_TLS || 'false',
+const getEnvVariable = (key: string, defaultValue?: string): string => {
+  const value = process.env[key];
+  if (value === undefined && defaultValue === undefined) {
+    throw new Error(`${key} is not defined in environment variables.`);
+  }
+  return value || defaultValue!;
 };
 
-if (!env.JWT_SECRET || !env.EMAIL_JWT_SECRET) {
-  throw new Error('secret is not defined in environment variables.');
-}
+export const env = {
+  NODE_ENV: getEnvVariable('NODE_ENV', 'development'),
+  PORT: getEnvVariable('PORT', '5000'),
+  MONGO_URI: getEnvVariable('MONGO_URI'),
+  JWT_SECRET: getEnvVariable('JWT_SECRET'),
+  JWT_EXPIRATION: getEnvVariable('JWT_EXPIRATION', '15m'),
+  ALLOWED_ORIGIN: getEnvVariable('ALLOWED_ORIGIN', '*'),
+  EMAIL_SERVICE: getEnvVariable('EMAIL_SERVICE'),
+  EMAIL_JWT_EXPIRATION: getEnvVariable('EMAIL_TOKEN_EXPIRATION', '10m'),
+  EMAIL_JWT_SECRET: getEnvVariable('EMAIL_JWT_SECRET'),
+  RESET_PASSWORD_JWT_SECRET: getEnvVariable('RESET_PASSWORD_JWT_SECRET'),
+  RESET_PASSWORD_JWT_EXPIRATION: getEnvVariable(
+    'RESET_PASSWORD_JWT_EXPIRATION',
+    '5m',
+  ),
+  REFRESH_TOKEN_SECRET: getEnvVariable('REFRESH_TOKEN_SECRET'),
+  REFRESH_TOKEN_EXPIRATION: getEnvVariable('REFRESH_TOKEN_EXPIRATION', '7d'),
+  REFRESH_TOKEN_EXPIRATION_BLACKLIST: getEnvVariable(
+    'REFRESH_TOKEN_EXPIRATION_BLACKLIST',
+  ),
+  ADMIN_EMAIL: getEnvVariable('ADMIN_EMAIL'),
+  ADMIN_PASSWORD: getEnvVariable('ADMIN_PASSWORD'),
+  CLIENT_URL: getEnvVariable('CLIENT_URL'),
+  REDIS_HOST: getEnvVariable('REDIS_HOST'),
+  REDIS_PORT: getEnvVariable('REDIS_PORT'),
+  REDIS_PASSWORD: getEnvVariable('REDIS_PASSWORD'),
+  REDIS_TLS: getEnvVariable('REDIS_TLS', 'false'),
+};

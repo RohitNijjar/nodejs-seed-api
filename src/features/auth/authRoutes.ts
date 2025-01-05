@@ -8,6 +8,7 @@ import {
   resetPasswordValidation,
   sendVerificationEmailValidation,
 } from './validators/authValidations';
+import { authMiddleware } from '../../middlewares/auth';
 import { validateRequest } from '../../middlewares/validateRequest';
 
 const authRoutes = Router();
@@ -33,11 +34,11 @@ authRoutes.post(
   validateRequest(resetPasswordValidation),
   AuthController.resetPassword,
 );
-
 authRoutes.post(
   '/send-verification-email',
   validateRequest(sendVerificationEmailValidation),
   AuthController.sendVerificationEmail,
 );
+authRoutes.post('/logout', authMiddleware, AuthController.logout);
 
 export { authRoutes };
