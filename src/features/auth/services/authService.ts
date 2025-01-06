@@ -11,7 +11,11 @@ import {
   comparePassword,
   hashPassword,
 } from '../../../shared/utils/hashing/hash';
-import { generateToken, verifyToken } from '../../../shared/utils/JWT/jwt';
+import {
+  generateToken,
+  isTokenBlacklisted,
+  verifyToken,
+} from '../../../shared/utils/JWT/jwt';
 import { UserDTO } from '../dtos';
 import { AUTH_ERROR_CODES } from '../errors/errorCodes';
 import { toUserDto, toUserPayload } from '../mappers/authMappers';
@@ -217,5 +221,29 @@ export const AuthService = {
     const tokenKey = `${BLACKLIST_PREFIX}${refreshToken}`;
     const expiration = Number(env.REFRESH_TOKEN_EXPIRATION_BLACKLIST);
     await setRedisKeyAsync(tokenKey, expiration, 'blacklisted');
+  },
+
+  renewToken: async (refreshToken: string): Promise<string> => {
+    const isBlacklisted = await isTokenBlacklisted(refreshToken);
+    if (isBlacklisted) {
+      throw new ApiError(
+        'Auth service error: Invalid refresh token',
+        ERROR_CODES.INVALID_REFRESH_TOKEN,
+        HTTP_STATUS.UNAUTHORIZED,
+      );
+    }
+
+    const user = verifyToken(refreshToken, env.REFRESH_TOKEN_SECRET);
+
+    const newToken = generateToken(
+      {
+        userId: user.userId,
+        email: user.email,
+        purpose: 'access',
+      },
+      env.JWT_SECRET,
+    );
+
+    return newToken;
   },
 };

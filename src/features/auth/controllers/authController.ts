@@ -172,17 +172,9 @@ export const AuthController = {
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
+    const refreshToken = req.cookies.refreshToken;
+
     try {
-      const refreshToken = req.cookies.refreshToken;
-
-      if (!refreshToken) {
-        throw new ApiError(
-          'Auth controller error: No refresh token',
-          ERROR_CODES.NO_REFRESH_TOKEN,
-          HTTP_STATUS.UNAUTHORIZED,
-        );
-      }
-
       await AuthService.logout(refreshToken);
 
       res.clearCookie('refreshToken', {
@@ -195,6 +187,37 @@ export const AuthController = {
         createApiResponse({
           data: {
             message: 'Logged out successfully',
+          },
+          statusCode: HTTP_STATUS.OK,
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  renewToken: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const refreshToken = req.cookies['refreshToken'];
+
+      if (!refreshToken) {
+        throw new ApiError(
+          'Auth controller error: No refresh token',
+          ERROR_CODES.NO_REFRESH_TOKEN,
+          HTTP_STATUS.BAD_REQUEST,
+        );
+      }
+
+      const newToken = await AuthService.renewToken(refreshToken);
+
+      res.status(HTTP_STATUS.OK).json(
+        createApiResponse({
+          data: {
+            token: newToken,
           },
           statusCode: HTTP_STATUS.OK,
         }),

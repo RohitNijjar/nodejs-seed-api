@@ -40,5 +40,6 @@ authRoutes.post(
   AuthController.sendVerificationEmail,
 );
 authRoutes.post('/logout', authMiddleware, AuthController.logout);
+authRoutes.post('/renew-token', AuthController.renewToken);
 
 export { authRoutes };
