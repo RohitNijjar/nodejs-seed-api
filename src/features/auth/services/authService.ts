@@ -16,8 +16,8 @@ import {
   isTokenBlacklisted,
   verifyToken,
 } from '../../../shared/utils/JWT/jwt';
+import { AUTH_ERROR_CODES } from '../constants';
 import { UserDTO } from '../dtos';
-import { AUTH_ERROR_CODES } from '../errors/errorCodes';
 import { toUserDto, toUserPayload } from '../mappers/authMappers';
 import {
   LoginRequest,
@@ -26,6 +26,11 @@ import {
 } from '../models/requests';
 import { AuthRepository } from '../repositories/authRepository';
 import { emailVerificationTemplate } from '../templates/emailTemplates';
+import {
+  generateRedirectURL,
+  isProviderValid,
+  verifyExternalLoginToken,
+} from '../utils';
 
 export const AuthService = {
   register: async (registerRequest: RegisterRequest): Promise<UserDTO> => {
@@ -114,6 +119,14 @@ export const AuthService = {
         'Auth service error: User not found',
         AUTH_ERROR_CODES.USER_NOT_FOUND,
         HTTP_STATUS.NOT_FOUND,
+      );
+    }
+
+    if (user.provider !== 'email') {
+      throw new ApiError(
+        'Auth service error: Not registered using email',
+        AUTH_ERROR_CODES.USER_NOT_REGISTERED_WITH_EMAIL,
+        HTTP_STATUS.CONFLICT,
       );
     }
 
@@ -245,5 +258,57 @@ export const AuthService = {
     );
 
     return newToken;
+  },
+
+  externalLogin: async (provider: string): Promise<string> => {
+    if (!isProviderValid(provider)) {
+      throw new ApiError(
+        'Auth service error: provder is missing',
+        ERROR_CODES.INVALID_REQUEST,
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+
+    const redirectUrl = generateRedirectURL(provider);
+
+    return redirectUrl;
+  },
+
+  externalLoginCallback: async (
+    code: string,
+    provider: string,
+  ): Promise<{ user: UserDTO; refreshToken: string }> => {
+    if (!code || !isProviderValid(provider)) {
+      throw new ApiError(
+        'Auth service error: Missing code or provider.',
+        ERROR_CODES.INVALID_REQUEST,
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+
+    const response = await verifyExternalLoginToken(code, provider);
+
+    const user = await AuthRepository.findOrCreateUser(
+      response.userEmail,
+      response.name,
+      provider,
+    );
+
+    if (!user.id) {
+      throw new ApiError(
+        'Auth service error: User not found',
+        ERROR_CODES.INTERNAL_SERVER_ERROR,
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const token = generateToken(toUserPayload(user.id, user.email, 'access'));
+    const refreshToken = generateToken(
+      toUserPayload(user.id, user.email, 'renewal'),
+      env.REFRESH_TOKEN_SECRET,
+      env.REFRESH_TOKEN_EXPIRATION,
+    );
+
+    return { user: toUserDto(user, token), refreshToken };
   },
 };

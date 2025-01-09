@@ -23,7 +23,6 @@ export const registerValidation = Joi.object({
   lastName: Joi.string().required().messages({
     'string.empty': 'Last name is required',
   }),
-  isVerified: Joi.boolean().default(false),
 });
 
 export const loginValidation = Joi.object({

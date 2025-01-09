@@ -1,11 +1,14 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+import { authProvider } from '../constants';
+
 export interface User {
   id?: string;
   email: string;
   password: string;
   firstName: string;
   lastName: string;
+  provider: authProvider;
   isVerified: boolean;
 }
 
@@ -19,7 +22,9 @@ const UserSchema: Schema = new Schema<User>(
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return this.provider === 'email';
+      },
       trim: true,
     },
     firstName: {
@@ -32,6 +37,10 @@ const UserSchema: Schema = new Schema<User>(
       required: true,
       trim: true,
     },
+    provider: {
+      type: String,
+      default: 'email',
+    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -40,7 +49,7 @@ const UserSchema: Schema = new Schema<User>(
   {
     timestamps: true,
     toJSON: {
-      transform: (doc, ret) => {
+      transform: (_doc, ret) => {
         ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
@@ -48,7 +57,7 @@ const UserSchema: Schema = new Schema<User>(
       },
     },
     toObject: {
-      transform: (doc, ret) => {
+      transform: (_doc, ret) => {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { env } from '../../../config';
+import { env, logger } from '../../../config';
 import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
 import { createApiResponse } from '../../../shared/utils/responseHandler';
@@ -218,6 +218,49 @@ export const AuthController = {
         createApiResponse({
           data: {
             token: newToken,
+          },
+          statusCode: HTTP_STATUS.OK,
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  externalLogin: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const { provider } = req.query;
+    try {
+      logger.info(provider);
+      const redirectUrl = await AuthService.externalLogin(provider as string);
+
+      res.redirect(redirectUrl);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  externalLoginCallback: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const { code, state } = req.query;
+
+    try {
+      const { user, refreshToken } = await AuthService.externalLoginCallback(
+        code as string,
+        state as string,
+      );
+
+      res.status(HTTP_STATUS.OK).json(
+        createApiResponse({
+          data: {
+            user,
+            refreshToken,
           },
           statusCode: HTTP_STATUS.OK,
         }),

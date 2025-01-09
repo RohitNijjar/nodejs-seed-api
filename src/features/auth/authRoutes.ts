@@ -41,5 +41,10 @@ authRoutes.post(
 );
 authRoutes.post('/logout', authMiddleware, AuthController.logout);
 authRoutes.post('/renew-token', AuthController.renewToken);
+authRoutes.get('/external-Login', AuthController.externalLogin);
+authRoutes.get(
+  '/external-login-callback',
+  AuthController.externalLoginCallback,
+);
 
 export { authRoutes };

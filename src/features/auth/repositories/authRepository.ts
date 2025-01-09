@@ -2,9 +2,10 @@ import { MongoServerError } from 'mongodb';
 
 import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
-import { AUTH_ERROR_CODES } from '../errors/errorCodes';
+import { AUTH_ERROR_CODES, authProvider } from '../constants';
 import { RegisterRequest } from '../models/requests';
 import { User, UserModel } from '../models/userModel';
+import { splitName } from '../utils';
 
 export const AuthRepository = {
   register: async (registerRequest: RegisterRequest): Promise<User> => {
@@ -33,5 +34,22 @@ export const AuthRepository = {
 
   updateUser: async (user: User): Promise<void> => {
     await UserModel.updateOne({ _id: user.id }, user);
+  },
+
+  findOrCreateUser: async (
+    email: string,
+    name: string,
+    provider: authProvider,
+  ): Promise<User> => {
+    const { firstName, lastName } = splitName(name);
+    const isVerified = true;
+
+    const user = await UserModel.findOneAndUpdate(
+      { email },
+      { $setOnInsert: { firstName, lastName, email, provider, isVerified } },
+      { new: true, upsert: true },
+    );
+
+    return user;
   },
 };
