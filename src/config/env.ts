@@ -38,4 +38,9 @@ export const env = {
   REDIS_PORT: getEnvVariable('REDIS_PORT'),
   REDIS_PASSWORD: getEnvVariable('REDIS_PASSWORD'),
   REDIS_TLS: getEnvVariable('REDIS_TLS', 'false'),
+  GOOGLE_OAUTH_URL: getEnvVariable('GOOGLE_OAUTH_URL'),
+  GOOGLE_CLIENT_ID: getEnvVariable('GOOGLE_CLIENT_ID'),
+  GOOGLE_CLIENT_SECRET: getEnvVariable('GOOGLE_CLIENT_SECRET'),
+  GOOGLE_REDIRECT_URI: getEnvVariable('GOOGLE_REDIRECT_URI'),
+  GOOGLE_TOKEN_URL: getEnvVariable('GOOGLE_TOKEN_URL'),
 };

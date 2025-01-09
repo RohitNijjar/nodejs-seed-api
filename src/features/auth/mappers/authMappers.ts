@@ -5,6 +5,7 @@ import {
   RegisterRequest,
   ResetPasswordRequest,
 } from '../models/requests';
+import { ExternalAuthResponse } from '../models/responses/externalAuthResponse';
 import { User } from '../models/userModel';
 
 export const toRegisterRequest = (
@@ -39,20 +40,6 @@ export const toResetPasswordRequest = (
   confirmPassword,
 });
 
-export const toUser = (
-  email: string,
-  password: string,
-  firstName: string,
-  lastName: string,
-  isVerified: boolean,
-): User => ({
-  email,
-  password,
-  firstName,
-  lastName,
-  isVerified,
-});
-
 export const toUserPayload = (
   userId: string,
   email: string,
@@ -70,4 +57,12 @@ export const toUserDto = (user: User, token?: string): UserDTO => ({
   email: user.email,
   isVerified: user.isVerified,
   token: token,
+});
+
+export const toExternalAuthResponse = (
+  email: string,
+  name: string,
+): ExternalAuthResponse => ({
+  name,
+  userEmail: email,
 });

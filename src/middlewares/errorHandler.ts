@@ -13,7 +13,7 @@ export const errorHandler = (
   next: NextFunction,
 ): void => {
   if (err instanceof ApiError) {
-    logger.error(`${err.statusCode} - ${err.errorCode} - ${err.message}`);
+    logger.error(`${err.errorCode} - ${err.message} - ${err.statusCode}`);
     if (err.errorMessage) {
       logger.error(`${err.errorMessage}`);
     }
@@ -32,7 +32,7 @@ export const errorHandler = (
         ? res.statusCode
         : HTTP_STATUS.INTERNAL_SERVER_ERROR;
 
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
+    res.status(statusCode).json(
       createApiResponse({
         errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
         statusCode,
