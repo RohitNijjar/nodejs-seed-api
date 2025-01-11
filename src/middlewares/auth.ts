@@ -17,10 +17,10 @@ const authMiddleware = async (
     const refreshToken = req.cookies['refreshToken'];
 
     if (!refreshToken) {
-      res.status(HTTP_STATUS.BAD_REQUEST).json(
+      res.status(HTTP_STATUS.UNAUTHORIZED).json(
         createApiResponse({
           errorCode: ERROR_CODES.NO_REFRESH_TOKEN,
-          statusCode: HTTP_STATUS.BAD_REQUEST,
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
         }),
       );
       return;
@@ -38,10 +38,10 @@ const authMiddleware = async (
     }
 
     if (!token) {
-      res.status(HTTP_STATUS.BAD_REQUEST).json(
+      res.status(HTTP_STATUS.UNAUTHORIZED).json(
         createApiResponse({
           errorCode: ERROR_CODES.NO_TOKEN,
-          statusCode: HTTP_STATUS.BAD_REQUEST,
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
         }),
       );
       return;
@@ -62,7 +62,7 @@ const authMiddleware = async (
       return;
     }
 
-    logger.error(`Auth unexpected error: ${error}`);
+    logger.error(`Unexpected auth error: ${error}`);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
       createApiResponse({
         errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,

@@ -1,5 +1,7 @@
 import Joi from 'joi';
 
+import { validProviders } from '../constants';
+
 export const registerValidation = Joi.object({
   email: Joi.string().email().required().messages({
     'string.empty': 'Email is required',
@@ -76,4 +78,14 @@ export const sendVerificationEmailValidation = Joi.object({
     'string.empty': 'Email is required',
     'string.email': 'Invalid email format',
   }),
+});
+
+export const externalLoginValidation = Joi.object({
+  provider: Joi.string()
+    .valid(...validProviders)
+    .required()
+    .messages({
+      'any.only': 'Invalid provider',
+      'string.empty': 'Provider is required',
+    }),
 });

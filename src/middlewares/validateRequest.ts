@@ -4,9 +4,15 @@ import { ObjectSchema } from 'joi';
 import { ERROR_CODES, HTTP_STATUS } from '../shared/constants';
 import { ApiError } from '../shared/errors';
 
-export const validateRequest = (schema: ObjectSchema) => {
+export const validateRequest = (
+  schema: ObjectSchema,
+  property: 'body' | 'query' | 'params' = 'body',
+) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
-    const { error } = schema.validate(req.body);
+    const { error } = schema.validate(req[property], {
+      abortEarly: false,
+    });
+
     if (error) {
       const errorMessage = error.details
         .map((detail) => detail.message)

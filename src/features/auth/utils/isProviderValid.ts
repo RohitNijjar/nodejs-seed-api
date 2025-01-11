@@ -1,5 +1,5 @@
-import { authProvider } from '../constants';
+import { authProvider, validProviders } from '../constants';
 
 export const isProviderValid = (provider: string): provider is authProvider => {
-  return ['email', 'google'].includes(provider as authProvider);
+  return validProviders.includes(provider as authProvider);
 };
