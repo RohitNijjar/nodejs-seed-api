@@ -16,8 +16,8 @@ import {
   isTokenBlacklisted,
   verifyToken,
 } from '../../../shared/utils/JWT/jwt';
-import { AUTH_ERROR_CODES } from '../constants';
-import { UserDTO } from '../dtos';
+import { AUTH_ERROR_CODES, authProvider } from '../constants';
+import { AuthenticatedUserDTO, UserDTO } from '../dtos';
 import { toUserDto, toUserPayload } from '../mappers/authMappers';
 import {
   LoginRequest,
@@ -26,11 +26,7 @@ import {
 } from '../models/requests';
 import { AuthRepository } from '../repositories/authRepository';
 import { emailVerificationTemplate } from '../templates/emailTemplates';
-import {
-  generateRedirectURL,
-  isProviderValid,
-  verifyExternalLoginToken,
-} from '../utils';
+import { generateRedirectURL, verifyExternalLoginToken } from '../utils';
 
 export const AuthService = {
   register: async (registerRequest: RegisterRequest): Promise<UserDTO> => {
@@ -45,9 +41,7 @@ export const AuthService = {
     return toUserDto(newUser);
   },
 
-  login: async (
-    loginRequest: LoginRequest,
-  ): Promise<{ user: UserDTO; refreshToken: string }> => {
+  login: async (loginRequest: LoginRequest): Promise<AuthenticatedUserDTO> => {
     const user = await AuthRepository.getUserByEmail(loginRequest.email);
     if (!user) {
       throw new ApiError(
@@ -101,7 +95,7 @@ export const AuthService = {
       throw new ApiError(
         'Auth service error: User already verified',
         AUTH_ERROR_CODES.USER_ALREADY_VERIFIED,
-        HTTP_STATUS.CONFLICT,
+        HTTP_STATUS.FORBIDDEN,
       );
     }
 
@@ -126,7 +120,7 @@ export const AuthService = {
       throw new ApiError(
         'Auth service error: Not registered using email',
         AUTH_ERROR_CODES.USER_NOT_REGISTERED_WITH_EMAIL,
-        HTTP_STATUS.CONFLICT,
+        HTTP_STATUS.UNPROCESSABLE_ENTITY,
       );
     }
 
@@ -134,7 +128,7 @@ export const AuthService = {
       throw new ApiError(
         'Auth service error: User is not verified',
         AUTH_ERROR_CODES.USER_NOT_VERIFIED,
-        HTTP_STATUS.UNAUTHORIZED,
+        HTTP_STATUS.FORBIDDEN,
       );
     }
 
@@ -260,32 +254,15 @@ export const AuthService = {
     return newToken;
   },
 
-  externalLogin: async (provider: string): Promise<string> => {
-    if (!isProviderValid(provider)) {
-      throw new ApiError(
-        'Auth service error: provder is missing',
-        ERROR_CODES.INVALID_REQUEST,
-        HTTP_STATUS.BAD_REQUEST,
-      );
-    }
-
+  externalLogin: async (provider: authProvider): Promise<string> => {
     const redirectUrl = generateRedirectURL(provider);
-
     return redirectUrl;
   },
 
   externalLoginCallback: async (
     code: string,
-    provider: string,
-  ): Promise<{ user: UserDTO; refreshToken: string }> => {
-    if (!code || !isProviderValid(provider)) {
-      throw new ApiError(
-        'Auth service error: Missing code or provider.',
-        ERROR_CODES.INVALID_REQUEST,
-        HTTP_STATUS.BAD_REQUEST,
-      );
-    }
-
+    provider: authProvider,
+  ): Promise<AuthenticatedUserDTO> => {
     const response = await verifyExternalLoginToken(code, provider);
 
     const user = await AuthRepository.findOrCreateUser(

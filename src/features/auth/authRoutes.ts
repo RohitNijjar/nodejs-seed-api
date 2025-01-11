@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { AuthController } from './controllers/authController';
 import {
+  externalLoginValidation,
   forgotPasswordValidation,
   loginValidation,
   registerValidation,
@@ -41,7 +42,11 @@ authRoutes.post(
 );
 authRoutes.post('/logout', authMiddleware, AuthController.logout);
 authRoutes.post('/renew-token', AuthController.renewToken);
-authRoutes.get('/external-Login', AuthController.externalLogin);
+authRoutes.get(
+  '/external-Login',
+  validateRequest(externalLoginValidation, 'query'),
+  AuthController.externalLogin,
+);
 authRoutes.get(
   '/external-login-callback',
   AuthController.externalLoginCallback,

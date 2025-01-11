@@ -1,15 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { env, logger } from '../../../config';
+import { env } from '../../../config';
 import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
 import { createApiResponse } from '../../../shared/utils/responseHandler';
+import { AUTH_ERROR_CODES, authProvider } from '../constants';
 import {
   toResetPasswordRequest,
   toLoginRequest,
   toRegisterRequest,
 } from '../mappers/authMappers';
 import { AuthService } from '../services/authService';
+import { isProviderValid } from '../utils';
 
 export const AuthController = {
   register: async (
@@ -73,7 +75,7 @@ export const AuthController = {
         throw new ApiError(
           'Auth controller error: No token provided',
           ERROR_CODES.NO_TOKEN,
-          HTTP_STATUS.BAD_REQUEST,
+          HTTP_STATUS.UNAUTHORIZED,
         );
       }
 
@@ -202,13 +204,13 @@ export const AuthController = {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const refreshToken = req.cookies['refreshToken'];
+      const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
         throw new ApiError(
           'Auth controller error: No refresh token',
           ERROR_CODES.NO_REFRESH_TOKEN,
-          HTTP_STATUS.BAD_REQUEST,
+          HTTP_STATUS.UNAUTHORIZED,
         );
       }
 
@@ -234,8 +236,9 @@ export const AuthController = {
   ): Promise<void> => {
     const { provider } = req.query;
     try {
-      logger.info(provider);
-      const redirectUrl = await AuthService.externalLogin(provider as string);
+      const redirectUrl = await AuthService.externalLogin(
+        provider as authProvider,
+      );
 
       res.redirect(redirectUrl);
     } catch (error) {
@@ -248,12 +251,21 @@ export const AuthController = {
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const { code, state } = req.query;
+    const { state, code } = req.query;
 
     try {
+      if (!code || !isProviderValid(state as string)) {
+        throw new ApiError(
+          'Auth controller error: Missing code or provider',
+          AUTH_ERROR_CODES.MISSING_CODE_OR_PROVIDER,
+          HTTP_STATUS.BAD_GATEWAY,
+        );
+      }
+
+      const provider = state as authProvider;
       const { user, refreshToken } = await AuthService.externalLoginCallback(
         code as string,
-        state as string,
+        provider,
       );
 
       res.status(HTTP_STATUS.OK).json(
