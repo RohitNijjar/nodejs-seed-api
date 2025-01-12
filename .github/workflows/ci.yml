@@ -1,0 +1,49 @@
+name: CI Pipeline
+
+on:
+  pull_request: # Trigger on pull requests to any branch
+    branches:
+      - dev # Add other branches you want to protect
+  push: # Optional: Trigger on push to specific branches
+    branches:
+      - dev
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set Up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x" # Specify your Node.js version
+          cache: "npm" # Cache Yarn or npm dependencies
+
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Run Linting
+      - name: Run Lint
+        run: npm run lint:fix
+
+      # Step 5: Run Build
+      - name: Build Project
+        run: npm run build
+
+      # Step 6: Run Unit Tests
+      - name: Run Unit Tests
+        run: npm test:coverage
+
+      # Step 7: Upload Coverage Report (Optional)
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/

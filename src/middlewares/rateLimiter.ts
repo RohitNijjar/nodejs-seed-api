@@ -1,77 +1,42 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response, NextFunction } from 'express';
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import Redis from 'ioredis';
 
-import { ERROR_CODES, HTTP_STATUS } from '../shared/constants';
-import {
-  rateLimiterByIp,
-  rateLimiterByUser,
-} from '../shared/rateLimiter/rateLimiter';
-import { createApiResponse } from '../shared/utils/responseHandler';
+import { ApiRateLimiter, getClientIp, getUserId } from '../features/auth/utils';
+import { redisClient } from '../shared/redis/redisClient';
 
-export const rateLimitByUserIdMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  try {
-    const userId = (req as any).user?.userId;
-    if (!userId) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json(
-        createApiResponse({
-          errorCode: ERROR_CODES.UNAUTHORIZED,
-          statusCode: HTTP_STATUS.UNAUTHORIZED,
-        }),
-      );
+const createRateLimiters = (redisClient: Redis) => {
+  const userLimiter = new ApiRateLimiter(
+    redisClient,
+    {
+      keyPrefix: 'user-rate-limiter',
+      points: 100,
+      duration: 60,
+      blockDuration: 60,
+    },
+    {
+      skipFailedRequests: true,
+      customResponseMessage: 'Too many requests.',
+    },
+  );
 
-      return;
-    }
+  const ipLimiter = new ApiRateLimiter(
+    redisClient,
+    {
+      keyPrefix: 'ip-rate-limiter',
+      points: 50,
+      duration: 60,
+      blockDuration: 120,
+    },
+    {
+      customResponseMessage: 'Rate limit exceeded.',
+    },
+  );
 
-    await rateLimiterByUser.consume(userId);
-    next();
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json(
-        createApiResponse({
-          errorCode: ERROR_CODES.TOO_MANY_REQUESTS,
-          statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
-          message: error.message,
-        }),
-      );
-      return;
-    }
-    next(error);
-  }
+  return {
+    rateLimitByUserMiddleware: userLimiter.createMiddleware(getUserId),
+    rateLimitByIpMiddleware: ipLimiter.createMiddleware(getClientIp),
+  };
 };
 
-export const rateLimitByIpMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  try {
-    const ip = req.ip;
-    if (!ip) {
-      res.status(HTTP_STATUS.BAD_REQUEST).json(
-        createApiResponse({
-          errorCode: ERROR_CODES.INVALID_REQUEST,
-          statusCode: HTTP_STATUS.BAD_REQUEST,
-        }),
-      );
-      return;
-    }
-    await rateLimiterByIp.consume(ip);
-    next();
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json(
-        createApiResponse({
-          errorCode: ERROR_CODES.TOO_MANY_REQUESTS,
-          statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
-          message: error.message,
-        }),
-      );
-      return;
-    }
-    next(error);
-  }
-};
+export const { rateLimitByUserMiddleware, rateLimitByIpMiddleware } =
+  createRateLimiters(redisClient);
