@@ -1,24 +1,24 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
 module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
   testTimeout: 10000,
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transform: {
-    "^.+\\.tsx?$": ["ts-jest", {}],
+    '^.+\\.tsx?$': ['ts-jest', {}],
   },
   collectCoverage: true,
   collectCoverageFrom: [
-    "src/shared/utils",
-    "src/features/**/controllers/**/*.ts",
-    "src/features/**/services/**/*.ts",
-    "src/features/**/repositories/**/*.ts",
-    "src/features/**/utils/**/*.ts",
-    "!src/**/index.ts"
+    'src/shared/utils',
+    'src/features/**/controllers/**/*.ts',
+    'src/features/**/services/**/*.ts',
+    'src/features/**/repositories/**/*.ts',
+    'src/features/**/utils/**/*.ts',
+    '!src/**/index.ts',
   ],
-  coverageDirectory: "coverage",
-  coverageReporters: ["text", "text-summary"],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'text-summary'],
   coverageThreshold: {
     global: {
       branches: 80,
