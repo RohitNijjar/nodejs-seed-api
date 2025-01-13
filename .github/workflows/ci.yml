@@ -39,6 +39,8 @@ jobs:
       # Step 6: Run Unit Tests
       - name: Run Unit Tests
         run: npm run test:coverage
+        env:
+          MONGO_URI: "mongodb://localhost:27017/mock"
 
       # Step 7: Upload Coverage Report (Optional)
       - name: Upload Coverage Report
