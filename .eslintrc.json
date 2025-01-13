@@ -1,13 +1,14 @@
 {
   "env": {
     "node": true,
-    "es2022": true
+    "es2022": true,
+    "jest/globals": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2022,
     "sourceType": "module",
-    "project": ["./tsconfig.json", "./tsconfig.jest.json"]
+    "project": ["./tsconfig.json"]
   },
   "extends": [
     "eslint:recommended",
@@ -26,6 +27,13 @@
     "prefer-const": "error",
     "eqeqeq": ["error", "always"],
     "curly": "error",
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "no-mixed-spaces-and-tabs": "warn",
+    "space-before-blocks": "error",
+    "space-in-parens": "error",
+    "space-infix-ops": "error",
+    "space-unary-ops": "error",
+    "quotes": ["error", "single"],
     
     // TypeScript Specific Rules
     "@typescript-eslint/no-explicit-any": "error",

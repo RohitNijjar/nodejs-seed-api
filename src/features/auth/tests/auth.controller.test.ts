@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
+import { env } from '../../../config';
+import { ERROR_CODES } from '../../../shared/constants';
+import { ApiError } from '../../../shared/errors';
 import { AuthController } from '../controllers/authController';
 import { AuthService } from '../services/authService';
-import { env } from '../../../config';
-import { ApiError } from '../../../shared/errors';
-import { ERROR_CODES } from '../../../shared/constants';
 
 jest.mock('../services/authService.ts');
 

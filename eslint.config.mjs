@@ -16,9 +16,7 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default [{
-    ignores: ["**/dist/", "**/build/", "**/node_modules/"],
-}, ...fixupConfigRules(compat.extends(
+export default [...fixupConfigRules(compat.extends(
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:import/recommended",
@@ -33,6 +31,7 @@ export default [{
     languageOptions: {
         globals: {
             ...globals.node,
+            ...globals.jest,
         },
 
         parser: tsParser,
@@ -40,7 +39,7 @@ export default [{
         sourceType: "module",
 
         parserOptions: {
-            project: "./tsconfig.json",
+            project: ["./tsconfig.json"],
         },
     },
 
@@ -56,6 +55,18 @@ export default [{
         "prefer-const": "error",
         eqeqeq: ["error", "always"],
         curly: "error",
+
+        indent: ["error", 2, {
+            SwitchCase: 1,
+        }],
+
+        "no-mixed-spaces-and-tabs": "warn",
+        "space-before-blocks": "error",
+        "space-in-parens": "error",
+        "space-infix-ops": "error",
+        "space-unary-ops": "error",
+        quotes: ["error", "single"],
+
         "@typescript-eslint/no-explicit-any": "error",
 
         "@typescript-eslint/explicit-function-return-type": ["error", {
