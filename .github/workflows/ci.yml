@@ -1,0 +1,66 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set Up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Run Linting
+      - name: Run Lint
+        run: npm run lint:fix
+
+      # Step 5: Run Build
+      - name: Build Project
+        run: npm run build
+
+      # Step 6: Run Unit Tests
+      - name: Run Unit Tests
+        run: npm run test:ci
+        env:
+          NODE_ENV: "test"
+          MONGO_URI: "mongodb://localhost:27017/test"
+          JWT_SECRET: "test-jwt-secret"
+          EMAIL_SERVICE: "test-email-service"
+          EMAIL_JWT_SECRET: "test-email-jwt-secret"
+          RESET_PASSWORD_JWT_SECRET: "test-reset-password-secret"
+          REFRESH_TOKEN_SECRET: "test-refresh-token-secret"
+          ADMIN_EMAIL: "admin@test.com"
+          ADMIN_PASSWORD: "admin-password"
+          CLIENT_URL: "http://localhost:3000"
+          REDIS_HOST: "localhost"
+          REDIS_PORT: "6379"
+          REDIS_PASSWORD: ""
+          REDIS_TLS: "false"
+          GOOGLE_OAUTH_URL: "https://accounts.google.com/o/oauth2/v2/auth"
+          GOOGLE_CLIENT_ID: "test-google-client-id"
+          GOOGLE_CLIENT_SECRET: "test-google-client-secret"
+          GOOGLE_REDIRECT_URI: "http://localhost:3000/auth/google/callback"
+          GOOGLE_TOKEN_URL: "https://oauth2.googleapis.com/token"
+
+      # Step 7: Upload Coverage Report (Optional)
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/

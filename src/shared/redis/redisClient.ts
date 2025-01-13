@@ -10,6 +10,15 @@ const redisClient = new Redis({
   tls: env.REDIS_TLS === 'true' ? {} : undefined,
 });
 
+const closeRedisConnection = async (): Promise<void> => {
+  try {
+    await redisClient.quit();
+    logger.info('Redis connection closed.');
+  } catch (error) {
+    logger.error('Error closing Redis connection:', error);
+  }
+};
+
 const getRedisValueAsync = promisify(redisClient.get).bind(redisClient);
 const setRedisKeyAsync = promisify(redisClient.setex).bind(redisClient);
 
@@ -21,4 +30,9 @@ redisClient.on('error', (error) => {
   logger.error(`Redis error - ${error.message}`);
 });
 
-export { redisClient, getRedisValueAsync, setRedisKeyAsync };
+export {
+  redisClient,
+  closeRedisConnection,
+  getRedisValueAsync,
+  setRedisKeyAsync,
+};
