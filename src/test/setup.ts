@@ -1,3 +1,15 @@
+import { logger } from '../config';
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled Rejection:', reason);
+  throw reason;
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  throw error;
+});
+
 afterEach(() => {
   jest.clearAllMocks();
 });
