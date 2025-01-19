@@ -399,21 +399,35 @@ describe('Auth Controller', () => {
       };
     });
 
-    it('should renew token and return 200 status with new token', async () => {
+    it('should renew tokens and return 200 status', async () => {
       // arrange
-      const mockNewToken = 'newAccessToken';
-      (AuthService.renewToken as jest.Mock).mockResolvedValue(mockNewToken);
+      const mockRenewTokenResponse = {
+        token: 'newToken123',
+        refreshToken: 'newRefreshToken123',
+      };
+      (AuthService.renewToken as jest.Mock).mockResolvedValue(
+        mockRenewTokenResponse,
+      );
 
       // act
       await AuthController.renewToken(req as Request, res as Response, next);
 
       // assert
       expect(AuthService.renewToken).toHaveBeenCalledWith('testRefreshToken');
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.cookie).toHaveBeenCalledWith(
+        'refreshToken',
+        mockRenewTokenResponse.refreshToken,
+        {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+        },
+      );
       expect(res.json).toHaveBeenCalledWith({
-        data: { token: mockNewToken },
+        data: { token: mockRenewTokenResponse.token },
         statusCode: 200,
       });
+      expect(res.status).toHaveBeenCalledWith(200);
     });
 
     it('should throw ApiError when no refresh token is provided', async () => {

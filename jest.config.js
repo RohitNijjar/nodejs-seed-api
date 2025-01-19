@@ -10,11 +10,9 @@ module.exports = {
   },
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/shared/utils',
     'src/features/**/controllers/**/*.ts',
     'src/features/**/services/**/*.ts',
     'src/features/**/repositories/**/*.ts',
-    'src/features/**/utils/**/*.ts',
     '!src/**/index.ts',
   ],
   coverageDirectory: 'coverage',

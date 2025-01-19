@@ -1,11 +1,6 @@
 import { env } from '../../../config';
-import {
-  BLACKLIST_PREFIX,
-  ERROR_CODES,
-  HTTP_STATUS,
-} from '../../../shared/constants';
+import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
-import { setRedisKeyAsync } from '../../../shared/redis/redisClient';
 import { sendEmail } from '../../../shared/utils/email';
 import {
   comparePassword,
@@ -13,6 +8,7 @@ import {
 } from '../../../shared/utils/hashing/hash';
 import {
   generateToken,
+  inValidateToken,
   isTokenBlacklisted,
   verifyToken,
 } from '../../../shared/utils/JWT/jwt';
@@ -691,41 +687,32 @@ describe('Auth Service', () => {
   describe('logout', () => {
     // arrange
     const mockRefreshToken = 'mockRefreshToken123';
-    const mockTokenKey = `${BLACKLIST_PREFIX}${mockRefreshToken}`;
-    const mockExpiration = Number(env.REFRESH_TOKEN_EXPIRATION_BLACKLIST);
 
-    it('should blacklist the refresh token', async () => {
+    it('should invalidate the refresh token', async () => {
       // arrange
-      (setRedisKeyAsync as jest.Mock).mockResolvedValue('OK');
+      (inValidateToken as jest.Mock).mockResolvedValue(true);
 
       // act
       await AuthService.logout(mockRefreshToken);
 
       // assert
-      expect(setRedisKeyAsync).toHaveBeenCalledWith(
-        mockTokenKey,
-        mockExpiration,
-        'blacklisted',
-      );
+      expect(inValidateToken).toHaveBeenCalledWith(mockRefreshToken);
     });
 
-    it('should throw an error if `setRedisKeyAsync` fails', async () => {
+    it('should throw an ApiError if `inValidateToken` fails', async () => {
       // arrange
-      (setRedisKeyAsync as jest.Mock).mockRejectedValue(
-        new Error('Redis error'),
-      );
+      (inValidateToken as jest.Mock).mockResolvedValue(false);
 
       // act
       await expect(AuthService.logout(mockRefreshToken)).rejects.toThrow(
-        'Redis error',
+        ApiError,
+      );
+      await expect(AuthService.logout(mockRefreshToken)).rejects.toThrow(
+        'Auth service error: invalidation failed',
       );
 
       // assert
-      expect(setRedisKeyAsync).toHaveBeenCalledWith(
-        mockTokenKey,
-        mockExpiration,
-        'blacklisted',
-      );
+      expect(inValidateToken).toHaveBeenCalledWith(mockRefreshToken);
     });
   });
 
@@ -738,12 +725,14 @@ describe('Auth Service', () => {
       purpose: 'test',
     };
 
-    it('should generate a new token', async () => {
+    it('should generate a new token and a new refresh token', async () => {
       // arrange
       (isTokenBlacklisted as jest.Mock).mockResolvedValue(false);
       (verifyToken as jest.Mock).mockReturnValue(mockUserPayload);
-      (toUserPayload as jest.Mock).mockReturnValue(mockUserPayload);
-      (generateToken as jest.Mock).mockReturnValue('mockNewToken');
+      (toUserPayload as jest.Mock).mockReturnValueOnce(mockUserPayload);
+      (generateToken as jest.Mock).mockReturnValueOnce('mockNewToken');
+      (toUserPayload as jest.Mock).mockReturnValueOnce(mockUserPayload);
+      (generateToken as jest.Mock).mockReturnValueOnce('mockNewRefreshToken');
 
       // act
       const result = await AuthService.renewToken(mockRefreshToken);
@@ -758,7 +747,10 @@ describe('Auth Service', () => {
         mockUserPayload,
         env.JWT_SECRET,
       );
-      expect(result).toBe('mockNewToken');
+      expect(result).toEqual({
+        token: 'mockNewToken',
+        refreshToken: 'mockNewRefreshToken',
+      });
     });
 
     it('should throw ApiError if refresh token is blacklisted', async () => {
