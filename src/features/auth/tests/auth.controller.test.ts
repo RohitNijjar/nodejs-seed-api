@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { env } from '../../../config';
-import { ERROR_CODES } from '../../../shared/constants';
+import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
+import { AUTH_ERROR_CODES } from '../constants';
 import { AuthController } from '../controllers/authController';
 import { AuthService } from '../services/authService';
 
@@ -26,6 +27,7 @@ describe('Auth Controller', () => {
   });
 
   describe('register', () => {
+    // setup
     beforeEach(() => {
       req = {
         body: {
@@ -38,6 +40,7 @@ describe('Auth Controller', () => {
     });
 
     it('should register a new user and return data with 201 status', async () => {
+      // arrange
       const mockNewUser = {
         id: '123',
         email: 'test@email.com',
@@ -46,8 +49,10 @@ describe('Auth Controller', () => {
       };
       (AuthService.register as jest.Mock).mockResolvedValue(mockNewUser);
 
+      // act
       await AuthController.register(req as Request, res as Response, next);
 
+      // assert
       expect(AuthService.register).toHaveBeenCalledWith({
         email: 'test@email.com',
         password: 'P@ssword123',
@@ -62,11 +67,14 @@ describe('Auth Controller', () => {
     });
 
     it('should call next with an error if registration fails', async () => {
+      // arrange
       const error = new Error('Registration failed');
       (AuthService.register as jest.Mock).mockRejectedValue(error);
 
+      // act
       await AuthController.register(req as Request, res as Response, next);
 
+      // assert
       expect(next).toHaveBeenCalledWith(error);
     });
   });
@@ -408,6 +416,24 @@ describe('Auth Controller', () => {
       });
     });
 
+    it('should throw ApiError when no refresh token is provided', async () => {
+      // arrange
+      req.cookies = {};
+      const apiError = new ApiError(
+        'Auth controller error: No refresh token',
+        ERROR_CODES.NO_REFRESH_TOKEN,
+        401,
+      );
+
+      // act
+      await AuthController.renewToken(req as Request, res as Response, next);
+
+      // assert
+      expect(next).toHaveBeenCalledWith(expect.objectContaining(apiError));
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
     it('should call next with an error if renew token fails', async () => {
       // arrange
       const error = new Error('Renew token failed');
@@ -434,25 +460,34 @@ describe('Auth Controller', () => {
     it('should redirect to external login URL', async () => {
       // arrange
       const mockRedirectUrl = 'https://accounts.google.com/o/oauth2/auth';
-      (AuthService.externalLogin as jest.Mock).mockResolvedValue(
-        mockRedirectUrl,
-      );
+      (AuthService.externalLogin as jest.Mock).mockReturnValue(mockRedirectUrl);
 
       // act
-      await AuthController.externalLogin(req as Request, res as Response, next);
+      AuthController.externalLogin(req as Request, res as Response, next);
 
       // assert
       expect(AuthService.externalLogin).toHaveBeenCalledWith('google');
       expect(res.redirect).toHaveBeenCalledWith(mockRedirectUrl);
     });
 
-    it('should call next with an error if external login fails', async () => {
+    it('should call next with an error if external login fails', () => {
       // arrange
-      const error = new Error('External login failed');
-      (AuthService.externalLogin as jest.Mock).mockRejectedValue(error);
+      req = {
+        query: {
+          provider: 'invalid',
+        },
+      };
+      const error = new ApiError(
+        'Auth service error: invalid provider',
+        AUTH_ERROR_CODES.INVALID_PROVIDER,
+        HTTP_STATUS.BAD_REQUEST,
+      );
+      (AuthService.externalLogin as jest.Mock).mockImplementation(() => {
+        throw error;
+      });
 
       // act
-      await AuthController.externalLogin(req as Request, res as Response, next);
+      AuthController.externalLogin(req as Request, res as Response, next);
 
       // assert
       expect(next).toHaveBeenCalledWith(error);
@@ -503,9 +538,36 @@ describe('Auth Controller', () => {
       });
     });
 
+    it('should throw ApiError if code or state is invalid', async () => {
+      // arrange
+      req = {
+        query: {},
+      };
+      const apiError = new ApiError(
+        'Auth controller error: Missing code or provider',
+        AUTH_ERROR_CODES.MISSING_CODE_OR_PROVIDER,
+        502,
+      );
+
+      // act
+      await AuthController.externalLoginCallback(
+        req as Request,
+        res as Response,
+        next,
+      );
+
+      // assert
+      expect(next).toHaveBeenCalledWith(apiError);
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
     it('should call next with an error if external login callback fails', async () => {
       // arrange
-      const error = new Error('External login callback failed');
+      const error = new ApiError(
+        'Auth service error: User was not created or fetched',
+        ERROR_CODES.INTERNAL_SERVER_ERROR,
+      );
       (AuthService.externalLoginCallback as jest.Mock).mockRejectedValue(error);
 
       // act
