@@ -4,7 +4,7 @@ import { env } from '../../../config';
 import { HTTP_STATUS, ERROR_CODES, BLACKLIST_PREFIX } from '../../constants';
 import { ApiError } from '../../errors';
 import { UserPayload } from '../../models';
-import { getRedisValueAsync } from '../../redis/redisClient';
+import { getRedisValueAsync, setRedisKeyAsync } from '../../redis/redisClient';
 
 export const generateToken = (
   payload: UserPayload,
@@ -37,6 +37,20 @@ export const verifyToken = (
       );
     }
     throw new ApiError('JWT error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+  }
+};
+
+export const inValidateToken = async (token: string): Promise<boolean> => {
+  try {
+    const tokenKey = `${BLACKLIST_PREFIX}${token}`;
+    const expiration = Number(env.REFRESH_TOKEN_EXPIRATION_BLACKLIST);
+    const result = await setRedisKeyAsync(tokenKey, expiration, 'blacklisted');
+    return result === 'OK';
+  } catch {
+    throw new ApiError(
+      'Token invalidation error: redis saving failed',
+      ERROR_CODES.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 

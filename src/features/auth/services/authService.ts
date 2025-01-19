@@ -1,11 +1,6 @@
 import { env } from '../../../config';
-import {
-  BLACKLIST_PREFIX,
-  ERROR_CODES,
-  HTTP_STATUS,
-} from '../../../shared/constants';
+import { ERROR_CODES, HTTP_STATUS } from '../../../shared/constants';
 import { ApiError } from '../../../shared/errors';
-import { setRedisKeyAsync } from '../../../shared/redis/redisClient';
 import { sendEmail } from '../../../shared/utils/email';
 import {
   comparePassword,
@@ -13,12 +8,14 @@ import {
 } from '../../../shared/utils/hashing/hash';
 import {
   generateToken,
+  inValidateToken,
   isTokenBlacklisted,
   verifyToken,
 } from '../../../shared/utils/JWT/jwt';
 import { AUTH_ERROR_CODES, authProvider } from '../constants';
 import { AuthenticatedUserDTO, UserDTO } from '../dtos';
 import { toUserDto, toUserPayload } from '../mappers/authMappers';
+import { RenewTokenResponse } from '../models';
 import {
   LoginRequest,
   RegisterRequest,
@@ -225,12 +222,16 @@ export const AuthService = {
   },
 
   logout: async (refreshToken: string): Promise<void> => {
-    const tokenKey = `${BLACKLIST_PREFIX}${refreshToken}`;
-    const expiration = Number(env.REFRESH_TOKEN_EXPIRATION_BLACKLIST);
-    await setRedisKeyAsync(tokenKey, expiration, 'blacklisted');
+    const result = await inValidateToken(refreshToken);
+    if (!result) {
+      throw new ApiError(
+        'Auth service error: invalidation failed',
+        ERROR_CODES.INTERNAL_SERVER_ERROR,
+      );
+    }
   },
 
-  renewToken: async (refreshToken: string): Promise<string> => {
+  renewToken: async (refreshToken: string): Promise<RenewTokenResponse> => {
     const isBlacklisted = await isTokenBlacklisted(refreshToken);
     if (isBlacklisted) {
       throw new ApiError(
@@ -247,7 +248,13 @@ export const AuthService = {
       env.JWT_SECRET,
     );
 
-    return newToken;
+    const newRefreshToken = generateToken(
+      toUserPayload(user.userId, user.email, 'renewal'),
+      env.REFRESH_TOKEN_SECRET,
+      env.REFRESH_TOKEN_EXPIRATION,
+    );
+
+    return { token: newToken, refreshToken: newRefreshToken };
   },
 
   externalLogin: (provider: authProvider): string => {

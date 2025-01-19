@@ -214,12 +214,18 @@ export const AuthController = {
         );
       }
 
-      const newToken = await AuthService.renewToken(refreshToken);
+      const result = await AuthService.renewToken(refreshToken);
+
+      res.cookie('refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
 
       res.status(HTTP_STATUS.OK).json(
         createApiResponse({
           data: {
-            token: newToken,
+            token: result.token,
           },
           statusCode: HTTP_STATUS.OK,
         }),
