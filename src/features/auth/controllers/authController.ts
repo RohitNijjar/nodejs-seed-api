@@ -229,16 +229,10 @@ export const AuthController = {
     }
   },
 
-  externalLogin: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  externalLogin: (req: Request, res: Response, next: NextFunction): void => {
     const { provider } = req.query;
     try {
-      const redirectUrl = await AuthService.externalLogin(
-        provider as authProvider,
-      );
+      const redirectUrl = AuthService.externalLogin(provider as authProvider);
 
       res.redirect(redirectUrl);
     } catch (error) {
@@ -258,7 +252,7 @@ export const AuthController = {
         throw new ApiError(
           'Auth controller error: Missing code or provider',
           AUTH_ERROR_CODES.MISSING_CODE_OR_PROVIDER,
-          HTTP_STATUS.BAD_GATEWAY,
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 

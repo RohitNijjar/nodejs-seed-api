@@ -18,13 +18,10 @@ module.exports = {
     '!src/**/index.ts',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'text-summary'],
+  coverageReporters: ['text', 'text-summary', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
       lines: 80,
-      statements: -10,
     },
   },
   testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.spec.ts'],

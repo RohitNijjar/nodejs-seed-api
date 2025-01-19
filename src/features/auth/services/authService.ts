@@ -243,18 +243,14 @@ export const AuthService = {
     const user = verifyToken(refreshToken, env.REFRESH_TOKEN_SECRET);
 
     const newToken = generateToken(
-      {
-        userId: user.userId,
-        email: user.email,
-        purpose: 'access',
-      },
+      toUserPayload(user.userId, user.email, 'access'),
       env.JWT_SECRET,
     );
 
     return newToken;
   },
 
-  externalLogin: async (provider: authProvider): Promise<string> => {
+  externalLogin: (provider: authProvider): string => {
     const redirectUrl = generateRedirectURL(provider);
     return redirectUrl;
   },
@@ -273,9 +269,8 @@ export const AuthService = {
 
     if (!user.id) {
       throw new ApiError(
-        'Auth service error: User not found',
+        'Auth service error: User was not created or fetched',
         ERROR_CODES.INTERNAL_SERVER_ERROR,
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
       );
     }
 
