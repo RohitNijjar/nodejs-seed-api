@@ -17,9 +17,9 @@ describe('Auth Controller', () => {
   beforeEach(() => {
     res = {
       status: jest.fn().mockReturnThis(),
+      cookie: jest.fn().mockReturnThis(),
+      clearCookie: jest.fn().mockReturnThis(),
       json: jest.fn(),
-      cookie: jest.fn(),
-      clearCookie: jest.fn(),
       redirect: jest.fn(),
     };
 
@@ -113,6 +113,7 @@ describe('Auth Controller', () => {
         email: 'test@email.com',
         password: 'P@ssword123',
       });
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.cookie).toHaveBeenCalledWith(
         'refreshToken',
         mockAuthenticateUser.refreshToken,
@@ -120,9 +121,9 @@ describe('Auth Controller', () => {
           httpOnly: true,
           secure: env.NODE_ENV === 'production',
           sameSite: 'strict',
+          maxAge: 604800000,
         },
       );
-      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         data: mockAuthenticateUser.user,
         statusCode: 200,
@@ -364,12 +365,12 @@ describe('Auth Controller', () => {
 
       // assert
       expect(AuthService.logout).toHaveBeenCalledWith('testRefreshToken');
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.clearCookie).toHaveBeenCalledWith('refreshToken', {
         httpOnly: true,
         secure: env.NODE_ENV === 'production',
         sameSite: 'strict',
       });
-      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         data: { message: mockMessage },
         statusCode: 200,
@@ -414,20 +415,21 @@ describe('Auth Controller', () => {
 
       // assert
       expect(AuthService.renewToken).toHaveBeenCalledWith('testRefreshToken');
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.cookie).toHaveBeenCalledWith(
         'refreshToken',
-        mockRenewTokenResponse.refreshToken,
+        'newRefreshToken123',
         {
           httpOnly: true,
           secure: env.NODE_ENV === 'production',
           sameSite: 'strict',
+          maxAge: 604800000,
         },
       );
       expect(res.json).toHaveBeenCalledWith({
-        data: { token: mockRenewTokenResponse.token },
+        data: { token: 'newToken123' },
         statusCode: 200,
       });
-      expect(res.status).toHaveBeenCalledWith(200);
     });
 
     it('should throw ApiError when no refresh token is provided', async () => {

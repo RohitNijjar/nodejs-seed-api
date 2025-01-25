@@ -10,3 +10,6 @@ dist
 
 # Coverage reports
 coverage/
+
+# Sentry Config File
+.sentryclirc

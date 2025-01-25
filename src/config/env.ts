@@ -32,6 +32,10 @@ export const env = {
     'REFRESH_TOKEN_EXPIRATION_BLACKLIST',
     '86400',
   ),
+  REFRESH_TOKEN_COOKIE_EXPIRATION: getEnvVariable(
+    'REFRESH_TOKEN_COOKIE_EXPIRATION',
+    '86400000',
+  ),
   ADMIN_EMAIL: getEnvVariable('ADMIN_EMAIL'),
   ADMIN_PASSWORD: getEnvVariable('ADMIN_PASSWORD'),
   CLIENT_URL: getEnvVariable('CLIENT_URL'),
@@ -44,4 +48,5 @@ export const env = {
   GOOGLE_CLIENT_SECRET: getEnvVariable('GOOGLE_CLIENT_SECRET'),
   GOOGLE_REDIRECT_URI: getEnvVariable('GOOGLE_REDIRECT_URI'),
   GOOGLE_TOKEN_URL: getEnvVariable('GOOGLE_TOKEN_URL'),
+  SENTRY_DSN: getEnvVariable('SENTRY_DSN'),
 };

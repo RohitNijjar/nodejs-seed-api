@@ -8,7 +8,7 @@ import { createApiResponse } from '../shared/utils/responseHandler';
 
 export const errorHandler = (
   err: Error,
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): void => {
@@ -26,7 +26,7 @@ export const errorHandler = (
       }),
     );
   } else {
-    logger.error(`Unexpected error: ${err.message}`);
+    logger.error(`Unexpected error: ${err.stack} - ${err.message}`);
     const statusCode =
       res.statusCode !== 200
         ? res.statusCode
