@@ -1,12 +1,27 @@
+import * as Sentry from '@sentry/node';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { env } from './config';
+import { initSentry } from './config/sentry';
 import { errorHandler } from './middlewares/errorHandler';
 import { apiRoutes } from './routes';
+
+const sentryConfig = {
+  dsn: env.SENTRY_DSN || '',
+  environment: env.NODE_ENV || 'development',
+  release: `build-${Date.now()}`,
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+  debug: env.NODE_ENV === 'development',
+};
+
+initSentry(sentryConfig);
+
+// eslint-disable-next-line import/order
+import express, { Request, Response } from 'express';
 
 const app = express();
 
@@ -29,6 +44,7 @@ app.get('/', (_req: Request, res: Response) => {
   res.status(200).send({ message: 'API is running!' });
 });
 
+Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 export { app };

@@ -47,18 +47,20 @@ export const AuthController = {
         toLoginRequest(email, password),
       );
 
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-      });
-
-      res.status(HTTP_STATUS.OK).json(
-        createApiResponse({
-          data: user,
-          statusCode: HTTP_STATUS.OK,
-        }),
-      );
+      res
+        .status(HTTP_STATUS.OK)
+        .cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: Number(env.REFRESH_TOKEN_COOKIE_EXPIRATION),
+        })
+        .json(
+          createApiResponse({
+            data: user,
+            statusCode: HTTP_STATUS.OK,
+          }),
+        );
     } catch (error) {
       next(error);
     }
@@ -179,20 +181,21 @@ export const AuthController = {
     try {
       await AuthService.logout(refreshToken);
 
-      res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-      });
-
-      res.status(HTTP_STATUS.OK).json(
-        createApiResponse({
-          data: {
-            message: 'Logged out successfully',
-          },
-          statusCode: HTTP_STATUS.OK,
-        }),
-      );
+      res
+        .status(HTTP_STATUS.OK)
+        .clearCookie('refreshToken', {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+        })
+        .json(
+          createApiResponse({
+            data: {
+              message: 'Logged out successfully',
+            },
+            statusCode: HTTP_STATUS.OK,
+          }),
+        );
     } catch (error) {
       next(error);
     }
@@ -216,20 +219,22 @@ export const AuthController = {
 
       const result = await AuthService.renewToken(refreshToken);
 
-      res.cookie('refreshToken', result.refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-      });
-
-      res.status(HTTP_STATUS.OK).json(
-        createApiResponse({
-          data: {
-            token: result.token,
-          },
-          statusCode: HTTP_STATUS.OK,
-        }),
-      );
+      res
+        .status(HTTP_STATUS.OK)
+        .cookie('refreshToken', result.refreshToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: Number(env.REFRESH_TOKEN_COOKIE_EXPIRATION),
+        })
+        .json(
+          createApiResponse({
+            data: {
+              token: result.token,
+            },
+            statusCode: HTTP_STATUS.OK,
+          }),
+        );
     } catch (error) {
       next(error);
     }

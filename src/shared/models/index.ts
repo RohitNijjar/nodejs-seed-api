@@ -1,3 +1,4 @@
 export * from './apiResponse';
 export * from './userPayload';
 export * from './emailMessage';
+export * from './sentryConfig';
