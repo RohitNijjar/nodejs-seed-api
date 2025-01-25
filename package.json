@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc && npm run sentry:sourcemaps",
+    "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint **/*.ts",
     "lint:fix": "eslint **/*.ts --fix",
