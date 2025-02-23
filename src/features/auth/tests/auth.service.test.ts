@@ -495,7 +495,7 @@ describe('Auth Service', () => {
       await expect(AuthService.forgotPassword(mockToken)).rejects.toThrow(
         new ApiError(
           'Auth service error: Not registered using email',
-          AUTH_ERROR_CODES.USER_NOT_REGISTERED_WITH_EMAIL,
+          AUTH_ERROR_CODES.USER_NOT_FOUND,
           HTTP_STATUS.UNPROCESSABLE_ENTITY,
         ),
       );
