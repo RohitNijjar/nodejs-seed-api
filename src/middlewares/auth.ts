@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import * as Sentry from '@sentry/node';
 import { NextFunction, Request, Response } from 'express';
 
 import { logger } from '../config';
@@ -52,6 +53,7 @@ const authMiddleware = async (
 
     next();
   } catch (error) {
+    Sentry.captureException(error);
     if (error instanceof ApiError) {
       res.status(error.statusCode).json(
         createApiResponse({

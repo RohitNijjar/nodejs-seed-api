@@ -116,7 +116,7 @@ export const AuthService = {
     if (user.provider !== 'email') {
       throw new ApiError(
         'Auth service error: Not registered using email',
-        AUTH_ERROR_CODES.USER_NOT_REGISTERED_WITH_EMAIL,
+        AUTH_ERROR_CODES.USER_NOT_FOUND,
         HTTP_STATUS.UNPROCESSABLE_ENTITY,
       );
     }

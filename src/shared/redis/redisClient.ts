@@ -28,6 +28,7 @@ redisClient.on('connect', () => {
 
 redisClient.on('error', (error) => {
   logger.error(`Redis error - ${error.message}`);
+  process.exit(1);
 });
 
 export {
