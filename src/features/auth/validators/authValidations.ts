@@ -2,6 +2,49 @@ import Joi from 'joi';
 
 import { validProviders } from '../constants';
 
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *   RegisterRequest:
+ *    type: object
+ *    required:
+ *      - email
+ *      - password
+ *      - firstName
+ *      - lastName
+ *    properties:
+ *      email:
+ *        type: string
+ *        default: testuser@email.com
+ *      password:
+ *        type: string
+ *        default: Test1234!
+ *      firstName:
+ *        type: string
+ *        default: Test
+ *      lastName:
+ *        type: string
+ *        default: User
+ *   CreateUserResponse:
+ *    type: object
+ *    properties:
+ *      data:
+ *        type: object
+ *        properties:
+ *          id:
+ *            type: string
+ *          firstName:
+ *            type: string
+ *          lastName:
+ *            type: string
+ *          email:
+ *            type: string
+ *          isVerified:
+ *            type: boolean
+ *      statusCode:
+ *        type: number
+ */
 export const registerValidation = Joi.object({
   email: Joi.string().email().required().messages({
     'string.empty': 'Email is required',
@@ -27,6 +70,43 @@ export const registerValidation = Joi.object({
   }),
 });
 
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *   LoginRequest:
+ *    type: object
+ *    required:
+ *      - email
+ *      - password
+ *    properties:
+ *      email:
+ *        type: string
+ *        default: testuser@email.com
+ *      password:
+ *        type: string
+ *        default: Test1234!
+ *   AuthenticatedUserResponse:
+ *    type: object
+ *    properties:
+ *      data:
+ *        type: object
+ *        properties:
+ *          id:
+ *            type: string
+ *          firstName:
+ *            type: string
+ *          lastName:
+ *            type: string
+ *          email:
+ *            type: string
+ *          isVerified:
+ *            type: boolean
+ *          token:
+ *            type: string
+ *      statusCode:
+ *        type: number
+ */
 export const loginValidation = Joi.object({
   email: Joi.string().email().required().messages({
     'string.empty': 'Email is required',

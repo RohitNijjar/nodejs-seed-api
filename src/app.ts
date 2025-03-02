@@ -6,6 +6,7 @@ import morgan from 'morgan';
 
 import { env } from './config';
 import { initSentry } from './config/sentry';
+import { setupSwagger } from './config/swagger';
 import { errorHandler } from './middlewares/errorHandler';
 import { apiRoutes } from './routes';
 
@@ -46,5 +47,7 @@ app.get('/', (_req: Request, res: Response) => {
 
 Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
+
+setupSwagger(app);
 
 export { app };
