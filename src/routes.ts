@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import { authRoutes } from './features/auth/authRoutes';
-import { userRoutes } from './features/user/userRoutes';
+import { authRoutes } from './features/auth/routes/authRoutes';
+import { userRoutes } from './features/user/routes/userRoutes';
 import { authMiddleware } from './middlewares/auth';
 import {
   rateLimitByIpMiddleware,
